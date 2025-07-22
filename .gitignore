@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+input_pdfs/
+output_tiffs/
+venv/
+.env
