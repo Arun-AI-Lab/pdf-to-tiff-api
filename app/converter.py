@@ -1,19 +1,21 @@
-from pdf2image import convert_from_path
+import fitz  # PyMuPDF
 from PIL import Image, ImageOps, ImageFilter
 import os
 
-def convert_pdf_pages_to_tiff(pdf_path, output_dir, page_indices, dpi=600):
+def convert_pdf_pages_to_tiff(pdf_path, output_dir, page_indices, dpi=300):
     os.makedirs(output_dir, exist_ok=True)
-
-    pages = convert_from_path(pdf_path, dpi=dpi)
+    doc = fitz.open(pdf_path)
     output_files = []
 
     for i in page_indices:
-        if i < 0 or i >= len(pages):
-            continue  # skip invalid page
+        if i < 0 or i >= len(doc):
+            continue
 
-        page = pages[i]
-        gray = page.convert('L')
+        # Render page to image
+        pix = doc.load_page(i).get_pixmap(dpi=dpi)
+        img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
+
+        gray = img.convert("L")
         enhanced = ImageOps.autocontrast(gray, cutoff=1)
         sharpened = enhanced.filter(ImageFilter.SHARPEN)
 
